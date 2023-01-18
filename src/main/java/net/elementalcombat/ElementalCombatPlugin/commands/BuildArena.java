@@ -4,6 +4,7 @@ import co.aikar.commands.BaseCommand;
 import co.aikar.commands.annotation.CommandAlias;
 import co.aikar.commands.annotation.Default;
 import net.elementalcombat.ElementalCombatPlugin.utils.Matrix3D;
+import net.elementalcombat.ElementalCombatPlugin.utils.TerrainParts;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.command.CommandSender;
@@ -13,6 +14,7 @@ import java.util.Arrays;
 import java.util.Objects;
 
 import static net.elementalcombat.ElementalCombatPlugin.utils.noise.generateTerrain;
+import static net.elementalcombat.ElementalCombatPlugin.utils.noise.noiseMap;
 
 
 @CommandAlias("buildarena")
@@ -32,6 +34,7 @@ public class BuildArena extends BaseCommand {
         int[] terrain_start = {0, -20, 0};
         int[] terrain_end = {150, 0, 150};
         Matrix3D terrain = generateTerrain(terrain_start, terrain_end);
+        terrain = placeBoulders(terrain);
         player.sendMessage("Starting to add terrain");
         setBlocks(terrain);
         Matrix3D dirtunderground = buildBlockList(new int[]{start[0], -63, start[2]}, new int[]{end[0], -20, end[2]}, Material.DIRT);
@@ -94,5 +97,33 @@ public class BuildArena extends BaseCommand {
 
         return new ArrayList<>(Arrays.asList(left_wall_blocks, right_wall_blocks, front_wall_blocks, back_wall_blocks));
 
+    }
+
+    Matrix3D placeBoulders(Matrix3D terrain) {
+        // get a random number of boulders
+        int amount = (int) (Math.random() * 10);
+        // get a random size for each boulder
+        int size = (int) (Math.random() * 10);
+        // get a random position for each boulder
+        int[] position = {(int) (Math.random() * 150), (int) (Math.random() * 20) + 3, (int) (Math.random() * 150)};
+
+        for (int i = 0; i < amount; i++) {
+            Matrix3D boulder = new TerrainParts().Boulder(size);
+            int rand_x = (int) (Math.random() * noiseMap.getWidth());
+            int rand_z = (int) (Math.random() * noiseMap.getHeight());
+            int rand_y = noiseMap.get(rand_x, rand_z);
+            boulder.setStart(new int[]{rand_x, rand_y, rand_z});
+            boulder.setEnd(new int[]{rand_x + boulder.getWidth(), rand_y + boulder.getHeight(), rand_z + boulder.getDepth()});
+            for (int x = 0; x < boulder.getWidth(); x++) {
+                for (int y = 0; y < boulder.getHeight(); y++) {
+                    for (int z = 0; z < boulder.getDepth(); z++) {
+                        if (boulder.get(x, y, z) != null) {
+                            terrain.set(x + rand_x - 1, y + rand_y - 1, z + rand_z - 1, boulder.get(x, y, z));
+                        }
+                    }
+                }
+            }
+        }
+        return terrain;
     }
 }

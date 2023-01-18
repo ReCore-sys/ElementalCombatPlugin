@@ -5,6 +5,8 @@ import org.bukkit.Material;
 import java.time.Clock;
 
 public class noise {
+    public static Matrix2D noiseMap;
+
     public static Matrix3D generateTerrain(int[] start, int[] end) {
         int width = end[0] - start[0];
         int height = end[1] - start[1];
@@ -14,7 +16,7 @@ public class noise {
         matrix.setEnd(end);
         noisefunctions noise = new noisefunctions();
         noise.OpenSimplexNoise(Clock.systemUTC().instant().getEpochSecond());
-        Matrix2D noiseMap = new Matrix2D(width, depth);
+        noiseMap = new Matrix2D(width, depth);
         for (int x = 0; x < width; x++) {
             for (int z = 0; z < depth; z++) {
                 double nx = (double) x / (double) width * 2d;
